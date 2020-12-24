@@ -8,7 +8,10 @@ matrix:
   fast_finish: true
   include:
     - os: linux
-      if: branch = coverity_scan
+      dist: xenial
+      # In order to stay under the coverity rate limit, we only run this weekly
+      # and not on push which is configured in travis-ci settings.
+      if: branch = master
 
 before_install:
     - echo -n | openssl s_client -connect scan.coverity.com:443 | sed -ne '/-BEGIN CERTIFICATE-/,/-END CERTIFICATE-/p' | sudo tee -a /etc/ssl/certs/ca-
@@ -28,5 +31,5 @@ addons:
       description: "Build submitted via Travis CI"
     notification_email: ci@px4.io
     build_command_prepend: "make distclean"
-    build_command: "make posix_sitl_default"
+    build_command: "make px4_sitl_default"
     branch_pattern: coverity_scan

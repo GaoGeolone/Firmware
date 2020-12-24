@@ -36,7 +36,8 @@
  * Firmware uploader for PX4IO
  */
 
-#include <px4_config.h>
+#include <px4_platform_common/px4_config.h>
+#include <px4_platform_common/time.h>
 
 #include <sys/types.h>
 #include <stdlib.h>
@@ -127,7 +128,7 @@ PX4IO_Uploader::upload(const char *filenames[])
 			break;
 
 		} else {
-			usleep(10000);
+			px4_usleep(10000);
 		}
 	}
 
@@ -267,7 +268,7 @@ PX4IO_Uploader::recv_byte_with_timeout(uint8_t *c, unsigned timeout)
 
 	read(_io_fd, c, 1);
 #ifdef UDEBUG
-	log("recv_bytes 0x%02x", c);
+	log("recv_bytes 0x%02x", *c);
 #endif
 	return OK;
 }
@@ -314,7 +315,17 @@ int
 PX4IO_Uploader::send(uint8_t c)
 {
 #ifdef UDEBUG
-	log("send 0x%02x", c);
+	static uint8_t cnt = 0;
+
+	if (c == 0) {
+		if (cnt == 0 || cnt == 32 || cnt == 64 || cnt == 128) { log("send+ 0x%02x", c); }
+
+		cnt++;
+
+	} else {
+		log("send 0x%02x", c);
+	}
+
 #endif
 
 	if (write(_io_fd, &c, 1) != 1) {
